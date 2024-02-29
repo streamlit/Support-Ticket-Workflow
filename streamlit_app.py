@@ -46,6 +46,7 @@ end_date = datetime(2023, 12, 20)
 id_values = ['TICKET-{}'.format(i) for i in range(1000, 1100)]
 issue_list = [generate_issue() for _ in range(100)]
 
+
 def generate_random_dates(start_date, end_date, id_values):
     date_range = pd.date_range(start_date, end_date).strftime('%m-%d-%Y')
     return np.random.choice(date_range, size=len(id_values), replace=False)
