@@ -139,6 +139,7 @@ with tabs[1]:
       st.metric(label='No. of tickets in the queue', value=n_tickets_queue, delta='')
       st.metric(label='Avg. ticket resolution time (hr)', value=16, delta='')
       
+      
   with col[1]:
       status_plot = alt.Chart(edited_df).mark_bar().encode(
           x='month(Date Submitted):O',
