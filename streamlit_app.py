@@ -1,11 +1,12 @@
-from datetime import datetime
+import datetime
+import random
 
 import altair as alt
 import numpy as np
 import pandas as pd
 import streamlit as st
 
-# Page title
+# Show app title and description.
 st.set_page_config(page_title="Support ticket workflow", page_icon="🎫")
 st.title("🎫 Support ticket workflow")
 st.write(
@@ -13,15 +14,14 @@ st.write(
     "and check the status and statistics of tickets below."
 )
 
+# Create a random Pandas dataframe with existing tickets. 
+if "df" not in st.session_state:
 
-# Generate data
-## Set seed for reproducibility
-np.random.seed(42)
+    # Set seed for reproducibility.
+    np.random.seed(42)
 
-
-## Function to generate a random issue description
-def generate_issue():
-    issues = [
+    # Make up some fake issue descriptions.
+    issue_descriptions = [
         "Network connectivity issues in the office",
         "Software application crashing on startup",
         "Printer not responding to print commands",
@@ -43,65 +43,58 @@ def generate_issue():
         "Customer data not loading in CRM",
         "Collaboration tool not sending notifications",
     ]
-    return np.random.choice(issues)
 
+    # Generate the dataframe with 100 rows/tickets.
+    data = {
+        "ID": [f"TICKET-{i}" for i in range(1100, 1000, -1)],
+        "Issue": np.random.choice(issue_descriptions, size=100),
+        "Status": np.random.choice(["Open", "In Progress", "Closed"], size=100),
+        "Priority": np.random.choice(["High", "Medium", "Low"], size=100),
+        "Date Submitted": [
+            datetime.date(2023, 6, 1) + datetime.timedelta(days=random.randint(0, 182))
+            for _ in range(100)
+        ],
+    }
+    df = pd.DataFrame(data)
 
-## Function to generate random dates
-start_date = datetime(2023, 6, 1)
-end_date = datetime(2023, 12, 20)
-id_values = ["TICKET-{}".format(i) for i in range(1000, 1100)]
-issue_list = [generate_issue() for _ in range(100)]
-
-
-def generate_random_dates(start_date, end_date, id_values):
-    date_range = pd.date_range(start_date, end_date).strftime("%m-%d-%Y")
-    return np.random.choice(date_range, size=len(id_values), replace=False)
-
-
-## Generate 100 rows of data
-data = {
-    "Issue": issue_list,
-    "Status": np.random.choice(["Open", "In Progress", "Closed"], size=100),
-    "Priority": np.random.choice(["High", "Medium", "Low"], size=100),
-    "Date Submitted": generate_random_dates(start_date, end_date, id_values),
-}
-df = pd.DataFrame(data)
-df.insert(0, "ID", id_values)
-df = df.sort_values(by=["Status", "ID"], ascending=[False, False])
-
-## Create DataFrame
-if "df" not in st.session_state:
+    # Save the dataframe in session state (a dictionary-like object that persists across 
+    # page runs). This ensures our data is persisted when the app updates.
     st.session_state.df = df
 
-# Tabs for app layout
 
-recent_ticket_number = int(max(st.session_state.df.ID).split("-")[1])
-
+# Show a section to add a new ticket.
 st.header("Add a ticket")
-with st.form("addition"):
+
+# We're adding tickets via an `st.form` and some input widgets. If widgets are used
+# in a form, the app will only rerun once the submit button is pressed. 
+with st.form("add_ticket_form"):
     issue = st.text_area("Describe the issue")
     priority = st.selectbox("Priority", ["High", "Medium", "Low"])
-    submit = st.form_submit_button("Submit")
+    submitted = st.form_submit_button("Submit")
 
-if submit:
-    today_date = datetime.now().strftime("%m-%d-%Y")
-    df2 = pd.DataFrame(
+if submitted:
+    # Make a dataframe for the new ticket and append it to the dataframe in session 
+    # state.
+    recent_ticket_number = int(max(st.session_state.df.ID).split("-")[1])
+    today = datetime.datetime.now().strftime("%m-%d-%Y")
+    df_new = pd.DataFrame(
         [
             {
                 "ID": f"TICKET-{recent_ticket_number+1}",
                 "Issue": issue,
                 "Status": "Open",
                 "Priority": priority,
-                "Date Submitted": today_date,
+                "Date Submitted": today,
             }
         ]
     )
-    st.write("Ticket submitted!")
-    st.dataframe(df2, use_container_width=True, hide_index=True)
-    st.session_state.df = pd.concat([st.session_state.df, df2], axis=0).sort_values(
-        by=["Status", "ID"], ascending=[False, False]
-    )
+    
+    # Show a little success message. 
+    st.write("Ticket submitted! Here are the ticket details:")
+    st.dataframe(df_new, use_container_width=True, hide_index=True)
+    st.session_state.df = pd.concat([df_new, st.session_state.df], axis=0)
 
+# Show section to view and edit existing tickets in a table.
 st.header("Existing tickets")
 st.write(f"Number of tickets: `{len(st.session_state.df)}`")
 
@@ -111,6 +104,8 @@ st.info(
     icon="✍️",
 )
 
+# Show the tickets dataframe with `st.data_editor`. This lets the user edit the table 
+# cells. The edited data is returned as a new dataframe.
 edited_df = st.data_editor(
     st.session_state.df,
     use_container_width=True,
@@ -129,19 +124,21 @@ edited_df = st.data_editor(
             required=True,
         ),
     },
+    # Disable editing the ID and Date Submitted columns.
+    disabled=["ID", "Date Submitted"],
 )
 
-# Status plot
+# Show some metrics and charts about the ticket.
 st.header("Statistics")
+
+# Show metrics side by side using `st.columns` and `st.metric`.
 col1, col2, col3 = st.columns(3)
+num_open_tickets = len(st.session_state.df[st.session_state.df.Status == "Open"])
+col1.metric(label="Number of open tickets", value=num_open_tickets, delta=10)
+col2.metric(label="First response time (hours)", value=5.2, delta=-1.5)
+col3.metric(label="Average resolution time (hours)", value=16, delta=2)
 
-
-n_tickets_queue = len(st.session_state.df[st.session_state.df.Status == "Open"])
-
-col1.metric(label="First response time (hr)", value=5.2, delta=-1.5)
-col2.metric(label="No. of tickets in the queue", value=n_tickets_queue, delta=10)
-col3.metric(label="Avg. ticket resolution time (hr)", value=16, delta=-2)
-
+# Show two Altair charts using `st.altair_chart`.
 st.write("")
 st.write("##### Ticket status per month")
 status_plot = (
