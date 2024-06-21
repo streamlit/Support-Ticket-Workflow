@@ -1,8 +1,19 @@
-# 🎫 Support Ticket Workflow
+# 🎫 Support ticket workflow template
 
-A **Support Ticket Workflow** demo that allow users to write a ticket as well as check up on the status or review ticketing analytics.
+A simple Streamlit app showing an internal tool that lets you create, manage, and visualize support tickets. 
 
-## Demo App
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://support-ticket-workflow-tempalte.streamlit.app/)
 
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://support-ticket-workflow-tempalte.streamlit.app/)
+### How to run it on your own machine
 
+1. Install the requirements
+
+   ```
+   $ pip install -r requirements.txt
+   ```
+
+2. Run the app
+
+   ```
+   $ streamlit run streamlit_app.py
+   ```
