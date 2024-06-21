@@ -73,14 +73,6 @@ df = df.sort_values(by=["Status", "ID"], ascending=[False, False])
 if "df" not in st.session_state:
     st.session_state.df = df
 
-
-# Sort dataframe
-def sort_df():
-    st.session_state.df = edited_df.copy().sort_values(
-        by=["Status", "ID"], ascending=[False, False]
-    )
-
-
 # Tabs for app layout
 
 recent_ticket_number = int(max(st.session_state.df.ID).split("-")[1])
@@ -138,7 +130,6 @@ edited_df = st.data_editor(
         ),
     },
 )
-st.button("🔄 Sort DataFrame by the Status column", on_click=sort_df)
 
 # Status plot
 st.header("Statistics")
