@@ -8,7 +8,7 @@ import streamlit as st
 # Page title
 st.set_page_config(page_title="Support Ticket Workflow", page_icon="🎫")
 st.title("🎫 Support Ticket Workflow")
-st.info(
+st.write(
     "To write a ticket, fill out the form below. Check status or review ticketing analytics using the tabs below."
 )
 
