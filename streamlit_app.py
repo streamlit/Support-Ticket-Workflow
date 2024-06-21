@@ -10,11 +10,14 @@ import streamlit as st
 st.set_page_config(page_title="Support ticket workflow", page_icon="🎫")
 st.title("🎫 Support ticket workflow")
 st.write(
-    "This app shows an internal tool. The user can create support tickets at the top "
-    "and check the status and statistics of tickets below."
+    """
+    This app shows how you can build an internal tool in Streamlit. Here, we are 
+    implementing a support ticket workflow. The user can create a ticket, edit 
+    existing tickets, and view some statistics.
+    """
 )
 
-# Create a random Pandas dataframe with existing tickets. 
+# Create a random Pandas dataframe with existing tickets.
 if "df" not in st.session_state:
 
     # Set seed for reproducibility.
@@ -57,7 +60,7 @@ if "df" not in st.session_state:
     }
     df = pd.DataFrame(data)
 
-    # Save the dataframe in session state (a dictionary-like object that persists across 
+    # Save the dataframe in session state (a dictionary-like object that persists across
     # page runs). This ensures our data is persisted when the app updates.
     st.session_state.df = df
 
@@ -66,14 +69,14 @@ if "df" not in st.session_state:
 st.header("Add a ticket")
 
 # We're adding tickets via an `st.form` and some input widgets. If widgets are used
-# in a form, the app will only rerun once the submit button is pressed. 
+# in a form, the app will only rerun once the submit button is pressed.
 with st.form("add_ticket_form"):
     issue = st.text_area("Describe the issue")
     priority = st.selectbox("Priority", ["High", "Medium", "Low"])
     submitted = st.form_submit_button("Submit")
 
 if submitted:
-    # Make a dataframe for the new ticket and append it to the dataframe in session 
+    # Make a dataframe for the new ticket and append it to the dataframe in session
     # state.
     recent_ticket_number = int(max(st.session_state.df.ID).split("-")[1])
     today = datetime.datetime.now().strftime("%m-%d-%Y")
@@ -88,8 +91,8 @@ if submitted:
             }
         ]
     )
-    
-    # Show a little success message. 
+
+    # Show a little success message.
     st.write("Ticket submitted! Here are the ticket details:")
     st.dataframe(df_new, use_container_width=True, hide_index=True)
     st.session_state.df = pd.concat([df_new, st.session_state.df], axis=0)
@@ -104,7 +107,7 @@ st.info(
     icon="✍️",
 )
 
-# Show the tickets dataframe with `st.data_editor`. This lets the user edit the table 
+# Show the tickets dataframe with `st.data_editor`. This lets the user edit the table
 # cells. The edited data is returned as a new dataframe.
 edited_df = st.data_editor(
     st.session_state.df,
